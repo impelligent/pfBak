@@ -26,6 +26,7 @@ class PfBak:
     
     def __init__(self):
         self.backup_name = f"config-pfSense-{HOST}-{datetime.now().strftime('%m-%d-%Y,%H:%M:%S')}.xml"
+        self.backup_dir = 'backups'
         # set ssl verify type
         if args.verify:
             self.verify = True
@@ -38,8 +39,8 @@ class PfBak:
         else:
             self.host = f"https://{HOST}/"
         
-        if not path.exists('backups'):
-            makedirs('backups')
+        if not path.exists(self.backup_dir):
+            makedirs(self.backup_dir)
             
         self.session = requests.session()
     
@@ -117,7 +118,7 @@ class PfBak:
         
         if args.verbose:
             print(f'Saving the Configuration to: backups/{self.backup_name}')
-        with open(f"backups/{self.backup_name}", "w") as f:
+        with open(f"{self.backup_dir}/{self.backup_name}", "w") as f:
             f.write(r.text)
 
 if __name__ == "__main__":
