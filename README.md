@@ -2,7 +2,7 @@
 
 pfSense Backup Automation for extracting config via pfSense Web Interface.
 
-***Tested on pfSense 2.52*** 
+***Tested on pfSense 2.5.2*** 
 
 # Usage
 ```
