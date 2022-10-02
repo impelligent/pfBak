@@ -21,14 +21,14 @@ ENCRYPTED_PASS = env.get('ENCRYPTED_PASS')
 BACKUP_RRD = env.get('BACKUP_RRD')
 BACKUP_PKG = env.get('BACKUP_PKG')
 BACKUP_DATA = env.get('BACKUP_DATA')
-DAYS_OF_BACKUPS = env.get('DAYS_OF_BACKUPS')
+DAYS_OF_BACKUPS = env.get('DAYS_OF_BACKUPS', 7)
 BACKUP_DIR = env.get('BACKUP_DIR', 'backups')
 
 
 class PfBak:
     
     def __init__(self):
-        self.days = 60 * 60 * 24 * int(DAYS_OF_BACKUPS)
+        self.days = 60 * 60 * 24 * int(DAYS_OF_BACKUPS if DAYS_OF_BACKUPS else 7)
         self.backup_name = f"config-pfSense-{HOST}-{datetime.now().strftime('%m-%d-%Y,%H:%M:%S')}.xml"
         self.backup_dir = BACKUP_DIR if BACKUP_DIR else 'backups'
         # set ssl verify type
@@ -134,7 +134,7 @@ class PfBak:
 
     def deleteOldConfigs(self):
         if args.verbose:
-            print(f'Deleting Configs older than {DAYS_OF_BACKUP} days.')
+            print(f'Deleting Configs older than {DAYS_OF_BACKUPS} days.')
             
         for filename in listdir(self.backup_dir):
             filestamp = stat(path.join(self.backup_dir, filename)).st_mtime
