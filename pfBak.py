@@ -3,7 +3,7 @@ import requests
 from lxml import html
 import argparse
 from dotenv import load_dotenv
-from os import environ as env
+from os import environ as env, path, makedirs
 from datetime import datetime
 
 parser = argparse.ArgumentParser()
@@ -31,14 +31,16 @@ class PfBak:
             self.verify = True
         else:
             self.verify = False
-        print(self.verify)
+        
         # set host
         if args.http:
             self.host = f"http://{HOST}/"
         else:
             self.host = f"https://{HOST}/"
-        print(self.host)
-
+        
+        if not path.exists('backups'):
+            makedirs('backups')
+            
         self.session = requests.session()
     
     def backup_config(self):
