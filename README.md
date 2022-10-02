@@ -34,7 +34,7 @@ sudo pip3 install virtualenv
 
 
 #### Then run the bootstrap script
-- `bootstrap_env.sh`
+- `bootstrap.sh`
 
 #### Then source your environment
 - `source venv/bin/activate`
