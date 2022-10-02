@@ -21,5 +21,23 @@ options:
   -verify, --verify       Verify SSL
 
 ```
+
 # Example
-`python3 pfBak.py -ve -v` 
+
+If you haven't already, install pip and virtualenv :
+
+```
+sudo apt-get install python3-pip
+sudo pip3 install virtualenv
+```
+
+#### Then run the bootstrap script
+- `bootstrap_env.sh`
+
+#### Then source your environment
+- `source venv/bin/activate`
+
+#### Trigger Backup
+- `python pfBak.py -ve -v` 
+
+
