@@ -1,12 +1,13 @@
 __author__ = 'impelligent'
 import requests
 from lxml import html
-import argparse
+from argparse import ArgumentParser
 from dotenv import load_dotenv
-from os import environ as env, path, makedirs
+from os import environ as env, path, makedirs, stat, listdir, remove
+from time import time
 from datetime import datetime
 
-parser = argparse.ArgumentParser()
+parser = ArgumentParser()
 parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
 parser.add_argument("-i", "--http", action="store_true", help="use http instead of https")
 parser.add_argument("-verify", "--verify", action="store_true", help="Verify SSL")
@@ -20,13 +21,16 @@ ENCRYPTED_PASS = env.get('ENCRYPTED_PASS')
 BACKUP_RRD = env.get('BACKUP_RRD')
 BACKUP_PKG = env.get('BACKUP_PKG')
 BACKUP_DATA = env.get('BACKUP_DATA')
+DAYS_OF_BACKUPS = env.get('DAYS_OF_BACKUPS')
+BACKUP_DIR = env.get('BACKUP_DIR', 'backups')
 
 
 class PfBak:
     
     def __init__(self):
+        self.days = 60 * 60 * 24 * int(DAYS_OF_BACKUPS)
         self.backup_name = f"config-pfSense-{HOST}-{datetime.now().strftime('%m-%d-%Y,%H:%M:%S')}.xml"
-        self.backup_dir = 'backups'
+        self.backup_dir = BACKUP_DIR if BACKUP_DIR else 'backups'
         # set ssl verify type
         if args.verify:
             self.verify = True
@@ -44,11 +48,12 @@ class PfBak:
             
         self.session = requests.session()
     
-    def backup_config(self):
+    def executeProcess(self):
         self.getCSRF()
         self.login()
         self.getCSRF(exist=True)
         self.getConfig()
+        self.deleteOldConfigs()
         
     def getCSRF(self, exist=False):
 
@@ -115,12 +120,29 @@ class PfBak:
             if html.fromstring(r.text).xpath('count(//pfsense)') != 1.0:
                 exit("Something went wrong! the returned Content was not a PfSense Configuration File!")
         
+        else:
+            if not 'config.xml' in str(r.text):
+                exit("Something went wrong! the returned Content was not a PfSense Configuration File!")
         
         if args.verbose:
-            print(f'Saving the Configuration to: backups/{self.backup_name}')
+            print(f'Saving the Configuration to: {self.backup_dir}/{self.backup_name}')
+            
         with open(f"{self.backup_dir}/{self.backup_name}", "w") as f:
             f.write(r.text)
+        if args.verbose:
+            print(f'Configuration saved.')
+
+    def deleteOldConfigs(self):
+        if args.verbose:
+            print(f'Deleting Configs older than {DAYS_OF_BACKUP} days.')
+            
+        for filename in listdir(self.backup_dir):
+            filestamp = stat(path.join(self.backup_dir, filename)).st_mtime
+            if filestamp < time() - self.days:
+                if args.verbose:
+                    print(f'Deleting Config : {self.backup_dir}/{filename}')
+                remove(f'{self.backup_dir}/{filename}')
 
 if __name__ == "__main__":
     backup = PfBak()
-    backup.backup_config()
+    backup.executeProcess()
